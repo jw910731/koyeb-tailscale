@@ -1,9 +1,3 @@
-FROM golang:1.16.2-alpine3.13 as builder
-WORKDIR /app
-COPY . ./
-# This is where one could build the application code as well.
-
-
 FROM alpine:latest as tailscale
 WORKDIR /app
 COPY . ./
@@ -13,12 +7,10 @@ RUN wget https://pkgs.tailscale.com/stable/${TSFILE} && \
 COPY . ./
 
 
-FROM alpine:latest
-RUN apk update && apk add ca-certificates openssh sudo && rm -rf /var/cache/apk/*
+FROM ghcr.io/tenstorrent/tt-metal/tt-metalium-ubuntu-22.04-release-amd64:v0.62.0-rc34
+RUN apt update && apt install ca-certificates openssh-server sudo && rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
 # Copy binary to production image
-COPY --from=builder /app/start.sh /app/start.sh
-COPY --from=builder /app/my-app /app/my-app
 COPY --from=tailscale /app/tailscaled /app/tailscaled
 COPY --from=tailscale /app/tailscale /app/tailscale
 
@@ -26,4 +18,4 @@ RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
 
 
 # Run on container startup.
-CMD ["/app/start.sh"]
+CMD ["/app/tailscaled", "--tun=userspace-networking"]
