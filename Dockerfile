@@ -1,11 +1,8 @@
 FROM alpine:latest as tailscale
 WORKDIR /app
-COPY . ./
 ENV TSFILE=tailscale_1.16.2_amd64.tgz
 RUN wget https://pkgs.tailscale.com/stable/${TSFILE} && \
   tar xzf ${TSFILE} --strip-components=1
-COPY . ./
-
 
 FROM ghcr.io/tenstorrent/tt-metal/tt-metalium-ubuntu-22.04-release-amd64:v0.62.0-rc34
 RUN apt update && apt install ca-certificates openssh-server sudo && rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
